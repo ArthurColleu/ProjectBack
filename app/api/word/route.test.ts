@@ -5,7 +5,8 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 
 import { NextRequest } from "next/server";
-import { resolveTargetWord, POST } from "./route";
+import { resolveTargetWord } from "./resolve";
+import { POST } from "./route";
 import { getServiceRoleClient } from "@/lib/supabase/server";
 
 describe("resolveTargetWord", () => {
