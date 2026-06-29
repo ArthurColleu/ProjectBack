@@ -40,7 +40,7 @@ README.md
 
 ## Anti-triche
 
-Le mot du jour n'est jamais envoyé au client tel quel. Le client envoie son essai à `POST /api/word`, le serveur compare au mot cible et renvoie uniquement le résultat coloré par lettre (`correct` / `present` / `absent`) ainsi que `isCorrect`. Le mot cible n'est révélé au client que si la partie est gagnée, ou si les 6 essais sont épuisés sans succès.
+Le mot du jour n'est **jamais** envoyé au client, dans aucun cas. Le client envoie son essai à `POST /api/word`, le serveur compare au mot cible et renvoie uniquement le résultat coloré par lettre (`correct` / `present` / `absent`) ainsi que `isCorrect`. Sur un essai gagnant, le joueur connaît déjà le mot (il l'a tapé) ; en cas de défaite, le mot reste caché (on n'affiche pas la réponse). Ce choix évite qu'un client malveillant force la révélation du mot en mentant sur son nombre d'essais.
 
 ## Modèle de données (Supabase Postgres)
 
@@ -82,7 +82,7 @@ Algorithme en deux passes : (1) marquer les positions exactes ; (2) parmi les le
 1. Vérifie `guess` : 5 lettres, présent dans `dictionary.ts` → sinon `400 { error: "invalid_word" }`.
 2. Récupère le mot du jour (lookup par date ; fallback déterministe si absent ou Supabase indisponible).
 3. Calcule `evaluateGuess`, renvoie `{ result: LetterState[], isCorrect: boolean }`.
-4. Révèle le mot cible uniquement si `isCorrect === true`, ou via un champ `revealedWord` si c'est le 6e essai raté.
+4. Ne renvoie jamais le mot cible. La réponse se limite à `{ result, isCorrect }` (pas de champ `revealedWord`, pas de paramètre `attemptNumber`). La limite de 6 essais est gérée côté client.
 
 **`GET /api/word`** : renvoie `{ date: string }` (jamais le mot), utilisé par le client pour détecter un changement de jour (reset à minuit).
 
@@ -97,7 +97,7 @@ Algorithme en deux passes : (1) marquer les positions exactes ; (2) parmi les le
 - Grille 6×5, remplissage progressif, couleur (vert/jaune/gris) appliquée à réception de la réponse serveur, avec une légère animation.
 - Clavier virtuel AZERTY sous la grille, coloré selon le meilleur état connu de chaque lettre ; utilisable au clic/tactile et au clavier physique (écoute `keydown` globale).
 - Message d'erreur transitoire (shake + toast) si mot hors dictionnaire ou saisie incomplète.
-- Modal de fin de partie (gagné : nombre d'essais ; perdu : mot révélé), saisie désactivée jusqu'au lendemain.
+- Modal de fin de partie (gagné : nombre d'essais ; perdu : message d'encouragement sans révéler le mot), saisie désactivée jusqu'au lendemain.
 - Accessibilité : `aria-label` par case (lettre + état), `aria-label` sur les touches du clavier virtuel, gestion du focus clavier.
 
 ## Interface admin
