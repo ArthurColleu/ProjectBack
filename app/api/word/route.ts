@@ -3,8 +3,6 @@ import { evaluateGuess, dailyFallbackWord, LetterState } from "@/lib/game";
 import { isValidWord, DICTIONARY } from "@/lib/dictionary";
 import { getServiceRoleClient } from "@/lib/supabase/server";
 
-const MAX_ATTEMPTS = 6;
-
 function todayIsoDate(): string {
   return new Date().toISOString().slice(0, 10);
 }
@@ -34,7 +32,6 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);
   const guess = typeof body?.guess === "string" ? body.guess.toLowerCase() : "";
-  const attemptNumber = typeof body?.attemptNumber === "number" ? body.attemptNumber : 1;
 
   if (!isValidWord(guess)) {
     return NextResponse.json({ error: "invalid_word" }, { status: 400 });
@@ -45,14 +42,7 @@ export async function POST(request: NextRequest) {
   const result: LetterState[] = evaluateGuess(guess, target);
   const isCorrect = result.every((s) => s === "correct");
 
-  const response: { result: LetterState[]; isCorrect: boolean; revealedWord?: string } = {
-    result,
-    isCorrect,
-  };
-
-  if (isCorrect || attemptNumber >= MAX_ATTEMPTS) {
-    response.revealedWord = target;
-  }
-
-  return NextResponse.json(response);
+  // Anti-cheat: the target word is never returned to the client. On a correct
+  // guess the player already knows it; on a loss it stays hidden.
+  return NextResponse.json({ result, isCorrect });
 }
