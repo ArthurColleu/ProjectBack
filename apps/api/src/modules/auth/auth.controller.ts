@@ -13,6 +13,14 @@ function setAuthCookie(res: Response, user: PublicUser) {
   });
 }
 
+function clearAuthCookie(res: Response) {
+  res.clearCookie("token", {
+    httpOnly: true,
+    sameSite: "strict",
+    secure: env.NODE_ENV === "production",
+  });
+}
+
 export function makeAuthController(service: AuthService) {
   return {
     async register(req: Request, res: Response) {
@@ -26,7 +34,7 @@ export function makeAuthController(service: AuthService) {
       res.status(200).json({ user });
     },
     async logout(_req: Request, res: Response) {
-      res.clearCookie("token");
+      clearAuthCookie(res);
       res.status(204).end();
     },
     async me(req: Request, res: Response) {
@@ -36,7 +44,7 @@ export function makeAuthController(service: AuthService) {
     },
     async deleteMe(req: Request, res: Response) {
       await service.deleteAccount(req.user!.id);
-      res.clearCookie("token");
+      clearAuthCookie(res);
       res.status(204).end();
     },
   };

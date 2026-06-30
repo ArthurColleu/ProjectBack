@@ -22,6 +22,7 @@ describe("auth API", () => {
     expect(res.body.user.password_hash).toBeUndefined();
     expect(res.headers["set-cookie"]?.[0]).toMatch(/token=/);
     expect(res.headers["set-cookie"]?.[0]).toMatch(/HttpOnly/i);
+    expect(res.headers["set-cookie"]?.[0]).toMatch(/SameSite=Strict/i);
   });
 
   it("rejects duplicate email with 409", async () => {
@@ -61,6 +62,15 @@ describe("auth API", () => {
     expect(del.status).toBe(204);
     const me = await agent.get("/api/auth/me");
     expect(me.status).toBe(401);
+  });
+
+  it("logout clears the cookie so /me returns 401 afterwards", async () => {
+    const agent = request.agent(app);
+    await agent.post("/api/auth/register").send(creds);
+    expect((await agent.get("/api/auth/me")).status).toBe(200);
+    const out = await agent.post("/api/auth/logout");
+    expect(out.status).toBe(204);
+    expect((await agent.get("/api/auth/me")).status).toBe(401);
   });
 
   it("health endpoint reports db ok", async () => {
