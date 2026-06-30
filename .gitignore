@@ -28,3 +28,9 @@ yarn-error.log*
 # misc
 .vercel
 .playwright-mcp/
+
+# Next.js build cache
+.next/
+
+# Claude Code internal worktrees
+.claude/
