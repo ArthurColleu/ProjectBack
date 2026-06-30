@@ -287,6 +287,51 @@ sequenceDiagram
 
 ---
 
+## 5. Diagramme de déploiement
+
+Vue de l'infrastructure d'exécution en **production (Render)** : les nœuds
+(*device* / *execution environment* / *database*), les artefacts déployés sur
+chacun, et les protocoles de communication.
+
+```mermaid
+flowchart TB
+  subgraph client["«device» Poste client"]
+    browser["«execution environment» Navigateur web"]
+    spa["«artifact» SPA React (bundle JS/CSS)"]
+    browser --- spa
+  end
+
+  subgraph render["«execution environment» Render — région Frankfurt (UE)"]
+    subgraph websvc["«execution environment» Service web Node 22"]
+      apiart["«artifact» API Express (dist/server.js)"]
+      staticart["«artifact» Front statique (apps/web/dist)"]
+    end
+    subgraph dbnode["«database» PostgreSQL 16 managé"]
+      schema["«artifact» Schéma WordlFR (4 tables)"]
+    end
+  end
+
+  subgraph ci["«execution environment» GitHub"]
+    repo["«artifact» Dépôt + Actions CI"]
+  end
+
+  browser -- "HTTPS (TLS) — HTML/JSON, cookie JWT" --> websvc
+  apiart -- "SQL paramétré (réseau privé Render)" --> dbnode
+  repo -- "déploiement continu (push main)" --> render
+```
+
+**Lecture :**
+- Le **navigateur** télécharge le SPA puis dialogue avec le service web en **HTTPS** (cookie JWT `httpOnly`).
+- Un **seul service Node** sert à la fois l'API Express **et** les fichiers statiques du front (`NODE_ENV=production`).
+- La base **PostgreSQL managée** n'est joignable que par le **réseau privé** Render (pas d'exposition publique).
+- Le **déploiement continu** : un push sur `main` déclenche le build + déploiement (cf. [`deploiement.md`](deploiement.md)).
+
+> Variante **auto-hébergée** (Docker Compose) : 3 conteneurs `web` (nginx) /
+> `api` (Node) / `db` (PostgreSQL + volume) sur un même hôte Docker —
+> voir le diagramme d'architecture de [`deploiement.md`](deploiement.md).
+
+---
+
 ## Correspondance avec les blocs CDA
 
 | Diagramme | Compétence couverte |
@@ -296,3 +341,4 @@ sequenceDiagram
 | Classes (entités) | BC02 — concevoir la base de données relationnelle |
 | Classes (couches) | BC01/BC02 — composants métier et d'accès aux données |
 | Séquence | BC01 — composants métier ; illustration de l'anti-triche |
+| Déploiement | BC03 — préparer et documenter le déploiement |
