@@ -170,7 +170,10 @@ longer or shorter than 5 with 400 »* (words).
    ```
    → 54 tests verts, l'API est exercée de bout en bout sans base externe (pg-mem).
 2. **Démonstration live** sur l'URL de production Render.
-3. **Appels manuels** possibles via `curl` ou Postman (le contrat du §1 sert de référence).
+3. **Swagger UI** (documentation interactive OpenAPI 3.0) : `/api/docs` — permet
+   d'explorer et **tester chaque endpoint** depuis le navigateur. Spec brute :
+   `/api/openapi.json` (source : `apps/api/src/docs/openapi.ts`).
+4. **Appels manuels** possibles via `curl` ou Postman (le contrat du §1 sert de référence).
 4. **Diagramme de séquence** d'un appel `POST /api/game/guess` dans
    [`diagrammes-uml.md`](diagrammes-uml.md) pour expliquer le flux en couches.
 

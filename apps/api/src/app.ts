@@ -2,10 +2,12 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import swaggerUi from "swagger-ui-express";
 import path from "path";
 import { fileURLToPath } from "url";
 import type { Db } from "./db/pool.js";
 import { env } from "./config/env.js";
+import { openapiSpec } from "./docs/openapi.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { authRoutes } from "./modules/auth/auth.routes.js";
 import { healthRoutes } from "./modules/health/health.routes.js";
@@ -30,6 +32,11 @@ export function createApp(db: Db) {
   app.use("/api/game", gameRoutes(db));
   app.use("/api/stats", statsRoutes(db));
   app.use("/api/admin/words", wordsRoutes(db));
+
+  // Documentation interactive de l'API (Swagger UI) + spec brute en JSON.
+  // Montée AVANT le fallback SPA pour ne pas être avalée par le catch-all "*".
+  app.get("/api/openapi.json", (_req, res) => res.json(openapiSpec));
+  app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(openapiSpec, { customSiteTitle: "WordlFR — API" }));
 
   // In production, Express serves the Vite build and handles SPA routing
   if (env.NODE_ENV === "production") {

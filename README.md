@@ -10,6 +10,17 @@ Jeu **Wordle** quotidien en français, reconstruit en application full-stack 3-t
 > Crée un compte joueur depuis la page d'inscription pour jouer immédiatement.
 > Premier chargement : ~30 s si l'instance gratuite était en veille.
 
+## 📖 Documentation de l'API (Swagger)
+
+L'API est documentée au format **OpenAPI 3.0** et explorable via **Swagger UI** :
+
+| Ressource | En ligne | En local |
+|-----------|----------|----------|
+| Swagger UI | https://wordlfr.onrender.com/api/docs | http://localhost:3001/api/docs |
+| Spec OpenAPI (JSON) | https://wordlfr.onrender.com/api/openapi.json | http://localhost:3001/api/openapi.json |
+
+> La spec est définie dans `apps/api/src/docs/openapi.ts` et montée dans `app.ts`.
+
 ## Stack
 
 | Couche | Techno |
