@@ -82,8 +82,17 @@ export const DICTIONARY: string[] = [
   "halos",
 ];
 
-const DICTIONARY_SET = new Set(DICTIONARY);
+import { GUESSES_SET } from "./guesses.js";
 
+/**
+ * `DICTIONARY` est la liste curée des **réponses** possibles (mots du jour) :
+ * mots français courants et reconnaissables, utilisée par le tirage du mot du jour.
+ *
+ * `isValidWord` valide en revanche les **essais** du joueur contre la grande
+ * liste `GUESSES` (~5900 mots), à la manière du vrai Wordle : on accepte
+ * beaucoup plus de mots en saisie que de réponses possibles.
+ * Toutes les réponses de `DICTIONARY` sont garanties présentes dans `GUESSES`.
+ */
 export function isValidWord(word: string): boolean {
-  return DICTIONARY_SET.has(word.toLowerCase());
+  return GUESSES_SET.has(word.toLowerCase());
 }

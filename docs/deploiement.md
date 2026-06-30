@@ -104,6 +104,29 @@ Internet (HTTPS, TLS Render)
 
 > **Note d'éco-conception / coût :** l'offre gratuite met l'instance en veille après inactivité ; le premier appel la réveille (~30 s). Acceptable pour une démo CDA, à passer en plan payant pour une vraie production.
 
+### 2.5 Régénérer la liste de mots du jeu
+
+Le jeu s'appuie sur **deux listes** (`apps/api/src/domain/`), à la manière du vrai Wordle :
+
+| Fichier | Rôle | Taille |
+|---------|------|--------|
+| `dictionary.ts` → `DICTIONARY` | **Réponses** possibles (mot du jour) — mots courants curés à la main | ~435 |
+| `guesses.ts` → `GUESSES` | **Essais acceptés** (ce que le joueur peut taper) — généré | ~5 900 |
+
+`guesses.ts` est **généré** à partir du paquet open-source [`an-array-of-french-words`](https://www.npmjs.com/package/an-array-of-french-words) (dérivé du dictionnaire Hunspell FR, sans noms propres). Procédure de régénération :
+
+```bash
+# Dans un dossier temporaire
+npm install an-array-of-french-words
+# Filtrer : mots de 5 lettres, minuscules, accents retirés (NFD), [a-z] uniquement,
+# retirer une petite liste de termes grossiers, puis fusionner avec DICTIONARY
+# (garantit que toute réponse reste un essai valide) et écrire guesses.ts.
+```
+
+Un test automatisé (`dictionary.test.ts`) vérifie l'invariant clé : **toute réponse de `DICTIONARY` est présente dans `GUESSES`** (sinon le mot du jour serait impossible à taper).
+
+> Pour **ajouter des réponses** : éditer `DICTIONARY` dans `dictionary.ts` (5 lettres, sans accents). Pour **élargir les essais acceptés** : régénérer `guesses.ts`.
+
 ## 3. Variables d'environnement
 
 | Variable | Obligatoire | Défaut | Description |
