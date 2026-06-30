@@ -20,6 +20,7 @@ const stateStyles: Record<string, string> = {
 export function GameTile({ letter, state, reveal = false, delay = 0, bounce = false }: Props) {
   const [flipped, setFlipped] = useState(false);
   const [showBack, setShowBack] = useState(false);
+  const [bounceActive, setBounceActive] = useState(false);
 
   useEffect(() => {
     if (!reveal) return;
@@ -28,20 +29,31 @@ export function GameTile({ letter, state, reveal = false, delay = 0, bounce = fa
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [reveal, delay]);
 
+  // Rebond de victoire : déclenché APRÈS le retournement de la tuile, et porté
+  // par un élément distinct de celui qui a `perspective` (sinon le transform
+  // casse le rendu 3D et la face verte ne s'affiche pas).
+  useEffect(() => {
+    if (!bounce) { setBounceActive(false); return; }
+    const t = setTimeout(() => setBounceActive(true), delay + 500);
+    return () => clearTimeout(t);
+  }, [bounce, delay]);
+
   const frontClass = stateStyles["empty"];
   const backClass = stateStyles[state] ?? stateStyles["empty"];
 
   return (
     <div
-      className={`tile-container w-14 h-14 sm:w-16 sm:h-16 ${bounce ? "bounce" : ""}`}
+      className={`tile-bounce w-14 h-14 sm:w-16 sm:h-16 ${bounceActive ? "bounce" : ""}`}
       aria-hidden="true"
     >
-      <div className={`tile-inner ${flipped ? "flipped" : ""}`}>
-        <div className={`tile-front border-2 uppercase select-none ${frontClass}`}>
-          {letter}
-        </div>
-        <div className={`tile-back border-2 uppercase select-none transition-colors ${showBack ? backClass : frontClass}`}>
-          {letter}
+      <div className="tile-container">
+        <div className={`tile-inner ${flipped ? "flipped" : ""}`}>
+          <div className={`tile-front border-2 uppercase select-none ${frontClass}`}>
+            {letter}
+          </div>
+          <div className={`tile-back border-2 uppercase select-none transition-colors ${showBack ? backClass : frontClass}`}>
+            {letter}
+          </div>
         </div>
       </div>
     </div>
