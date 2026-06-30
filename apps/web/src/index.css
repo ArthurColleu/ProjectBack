@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background-color: #0f172a;
+    color: #f1f5f9;
+    font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+    min-height: 100dvh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  [tabindex="0"]:focus-visible {
+    outline: 3px solid #818cf8;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+/* ───── Tile flip ───── */
+.tile-container { perspective: 300px; }
+.tile-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.5s ease;
+}
+.tile-inner.flipped { transform: rotateX(180deg); }
+.tile-front, .tile-back {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(1.25rem, 4vw, 2rem);
+  font-weight: 700;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 4px;
+}
+.tile-back { transform: rotateX(180deg); }
+
+/* ───── Shake animation ───── */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-6px); }
+  40%       { transform: translateX(6px); }
+  60%       { transform: translateX(-6px); }
+  80%       { transform: translateX(6px); }
+}
+.shake { animation: shake 0.4s ease; }
+
+/* ───── Bounce (win) ───── */
+@keyframes bounce-up {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-14px); }
+}
+.bounce { animation: bounce-up 0.5s ease; }
+
+/* ───── Scale pop (key press) ───── */
+@keyframes key-pop {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(0.88); }
+}
+.key-pop { animation: key-pop 0.12s ease; }
+
+/* ───── Fade in ───── */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-in { animation: fade-in 0.25s ease forwards; }
+
+/* ───── Toast ───── */
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.toast { animation: slide-up 0.3s ease, fade-in 0.3s 1.7s ease reverse forwards; }
+
+/* ───── Skip link (RGAA) ───── */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 9999;
+  padding: 0.5rem 1.25rem;
+  background: #818cf8;
+  color: #0f172a;
+  font-weight: 700;
+  border-radius: 0 0 6px 6px;
+}
+.skip-link:focus { left: 50%; transform: translateX(-50%); }
+
+/* ───── Bar chart ───── */
+.bar-fill { transition: width 0.6s ease; }
