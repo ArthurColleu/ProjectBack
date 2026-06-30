@@ -63,6 +63,47 @@ docker compose up --build -d
 
 Les migrations SQL sont appliquées automatiquement au démarrage de l'API (via `migrate.ts`).
 
+### 2.4 Déploiement cloud managé (Render) — environnement de production
+
+L'application est déployée en production sur **Render** via un *Blueprint* (Infrastructure as Code) décrit dans `render.yaml` à la racine. Un seul service web Node héberge à la fois l'API Express et le build statique du front (servi par Express en `NODE_ENV=production`), connecté à une base PostgreSQL managée.
+
+**URL de production : https://wordlfr.onrender.com**
+
+```
+Internet (HTTPS, TLS Render)
+        │
+        ▼
+┌──────────────────────────┐
+│  Service web "wordlfr"   │   node apps/api/dist/server.js
+│  Express + SPA React     │   (static + /api/*)
+└────────────┬─────────────┘
+             │ réseau privé Render
+             ▼
+┌──────────────────────────┐
+│  PostgreSQL "wordlfr-db" │   managé, région Frankfurt (UE)
+└──────────────────────────┘
+```
+
+**Procédure (3 clics) :**
+
+1. Sur [render.com](https://render.com) → **New** → **Blueprint**.
+2. Sélectionner le dépôt GitHub `ProjectBack` (branche `main`).
+3. Render lit `render.yaml`, provisionne la base + le service, puis **Apply**.
+
+**Ce que `render.yaml` automatise :**
+
+| Élément | Valeur |
+|---------|--------|
+| Build | `npm ci --include=dev` (web + api) puis build Vite + `tsc` |
+| Start | `node apps/api/dist/server.js` (migrations + seed au boot) |
+| `DATABASE_URL` | injecté automatiquement depuis la base managée |
+| `JWT_SECRET` | généré aléatoirement par Render (`generateValue`) |
+| `ADMIN_PASSWORD` | généré aléatoirement (à récupérer dans l'onglet *Environment*) |
+| Health check | `/api/health` — Render n'ouvre le trafic qu'une fois la base joignable |
+| Région | Frankfurt (UE) — cohérent avec la note RGPD |
+
+> **Note d'éco-conception / coût :** l'offre gratuite met l'instance en veille après inactivité ; le premier appel la réveille (~30 s). Acceptable pour une démo CDA, à passer en plan payant pour une vraie production.
+
 ## 3. Variables d'environnement
 
 | Variable | Obligatoire | Défaut | Description |

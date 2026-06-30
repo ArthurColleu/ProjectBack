@@ -2,6 +2,14 @@
 
 Jeu **Wordle** quotidien en français, reconstruit en application full-stack 3-tier pour le dossier projet **Concepteur Développeur d'Applications**.
 
+## 🌐 Démo en ligne
+
+**https://wordlfr.onrender.com**
+
+> Hébergée sur Render (front + API + PostgreSQL co-hébergés, région Frankfurt / UE).
+> Crée un compte joueur depuis la page d'inscription pour jouer immédiatement.
+> Premier chargement : ~30 s si l'instance gratuite était en veille.
+
 ## Stack
 
 | Couche | Techno |
