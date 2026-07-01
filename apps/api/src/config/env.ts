@@ -8,6 +8,8 @@ const schema = z.object({
   CORS_ORIGIN: z.string().default("http://localhost:8080"),
   ADMIN_EMAIL: z.string().email().default("admin@wordle.local"),
   ADMIN_PASSWORD: z.string().min(8).default("admin1234"),
+  // NoSQL — optionnel : si absent, un cache mémoire de repli est utilisé
+  REDIS_URL: z.string().optional(),
 });
 
 export const env = schema.parse(process.env);

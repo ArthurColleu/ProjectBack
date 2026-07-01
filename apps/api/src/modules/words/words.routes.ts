@@ -3,14 +3,15 @@ import type { Db } from "../../db/pool.js";
 import { authenticate } from "../../middlewares/authenticate.js";
 import { authorize } from "../../middlewares/authorize.js";
 import { asyncHandler } from "../../lib/asyncHandler.js";
+import { noopCache, type Cache } from "../../db/cache.js";
 import { makeWordsRepository } from "./words.repository.js";
 import { makeWordsService } from "./words.service.js";
 import { makeWordsController } from "./words.controller.js";
 
-export function wordsRoutes(db: Db): Router {
+export function wordsRoutes(db: Db, cache: Cache = noopCache): Router {
   const router = Router();
   const repo = makeWordsRepository(db);
-  const service = makeWordsService(repo);
+  const service = makeWordsService(repo, cache);
   const ctrl = makeWordsController(service);
 
   router.use(authenticate, authorize("admin"));

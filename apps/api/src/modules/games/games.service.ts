@@ -3,9 +3,13 @@ import { isValidWord, DICTIONARY } from "../../domain/dictionary.js";
 import { dailyFallbackWord } from "../../domain/fallbackWord.js";
 import { todayIso } from "../../lib/clock.js";
 import { HttpError } from "../../middlewares/errorHandler.js";
+import { noopCache, dailyWordKey, type Cache } from "../../db/cache.js";
 import type { GamesRepository, GameStatus } from "./games.repository.js";
 
 const MAX_ATTEMPTS = 6;
+const WORD_CACHE_TTL = 3600; // 1 h — le mot du jour change rarement
+
+type CachedWord = { id: number; word: string; date?: string };
 
 export interface GameState {
   status: GameStatus;
@@ -20,17 +24,30 @@ export interface GuessResult {
 
 export function makeGamesService(
   repo: GamesRepository,
-  deps: { today?: () => string } = {},
+  deps: { today?: () => string; cache?: Cache } = {},
 ) {
   const today = deps.today ?? todayIso;
+  const cache = deps.cache ?? noopCache;
 
-  async function ensureWordAndGame(userId: number) {
-    const date = today();
+  // Le mot du jour est lu depuis le cache NoSQL (Redis) avant la BDD SQL :
+  // même valeur pour tous les joueurs, il évite un accès Postgres répété.
+  async function getDailyWord(date: string): Promise<CachedWord> {
+    const cached = await cache.get<CachedWord>(dailyWordKey(date));
+    if (cached) return cached;
+
     let word = await repo.findWordByDate(date);
     if (!word) {
       const fallback = dailyFallbackWord(date, DICTIONARY);
       word = await repo.insertDailyWord(date, fallback, null);
     }
+    const value: CachedWord = { id: word.id, word: word.word };
+    await cache.set(dailyWordKey(date), value, WORD_CACHE_TTL);
+    return value;
+  }
+
+  async function ensureWordAndGame(userId: number) {
+    const date = today();
+    const word = await getDailyWord(date);
     let game = await repo.findGame(userId, word.id);
     if (!game) {
       game = await repo.createGame(userId, word.id);

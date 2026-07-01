@@ -7,6 +7,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import type { Db } from "./db/pool.js";
 import { env } from "./config/env.js";
+import { noopCache, type Cache } from "./db/cache.js";
 import { openapiSpec } from "./docs/openapi.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { authRoutes } from "./modules/auth/auth.routes.js";
@@ -15,7 +16,7 @@ import { gameRoutes } from "./modules/games/games.routes.js";
 import { statsRoutes } from "./modules/stats/stats.routes.js";
 import { wordsRoutes } from "./modules/words/words.routes.js";
 
-export function createApp(db: Db) {
+export function createApp(db: Db, cache: Cache = noopCache) {
   const app = express();
   app.use(helmet({ contentSecurityPolicy: false }));
   app.use(
@@ -27,11 +28,11 @@ export function createApp(db: Db) {
   app.use(express.json());
   app.use(cookieParser());
 
-  app.use("/api/health", healthRoutes(db));
+  app.use("/api/health", healthRoutes(db, cache));
   app.use("/api/auth", authRoutes(db));
-  app.use("/api/game", gameRoutes(db));
+  app.use("/api/game", gameRoutes(db, cache));
   app.use("/api/stats", statsRoutes(db));
-  app.use("/api/admin/words", wordsRoutes(db));
+  app.use("/api/admin/words", wordsRoutes(db, cache));
 
   // Documentation interactive de l'API (Swagger UI) + spec brute en JSON.
   // Montée AVANT le fallback SPA pour ne pas être avalée par le catch-all "*".

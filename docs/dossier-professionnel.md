@@ -173,9 +173,10 @@ Points de conception clés :
 - `apps/api/src/domain/stats.ts` — fonction **pure** `computeStats` (séries en cours/max, taux de réussite, distribution) — entièrement testée unitairement.
 - `apps/api/src/modules/games/games.service.ts` — **anti-triche** : le nombre d'essais est relu en base, le mot n'est jamais retourné au client.
 
-### 7.3 Accès aux données — SQL paramétré (BC02)
-- `apps/api/src/modules/**/**.repository.ts` — toutes les requêtes utilisent des paramètres liés (`$1, $2, …`), **jamais** de concaténation de chaînes → protection contre l'injection SQL (OWASP A03).
-- `apps/api/src/db/migrate.ts` — exécution ordonnée des migrations `.sql`.
+### 7.3 Accès aux données — SQL **et NoSQL** (BC02)
+- **SQL** : `apps/api/src/modules/**/**.repository.ts` — toutes les requêtes utilisent des paramètres liés (`$1, $2, …`), **jamais** de concaténation de chaînes → protection contre l'injection SQL (OWASP A03). `apps/api/src/db/migrate.ts` exécute les migrations `.sql`.
+- **NoSQL** : `apps/api/src/db/cache.ts` — composant d'accès **Redis** (clé-valeur) pour le cache du mot du jour, avec repli mémoire et invalidation. Détail : [`nosql-redis.md`](nosql-redis.md).
+- **Document/JSONB** : `guesses.result` stocké en `JSONB` (semi-structuré) dans PostgreSQL.
 
 ### 7.4 Sécurité applicative
 - `apps/api/src/lib/password.ts` — hachage bcrypt.
@@ -262,6 +263,7 @@ Points de conception clés :
 | [`preuves-api.md`](preuves-api.md) | Preuves API mappées aux compétences RNCP |
 | [`deploiement.md`](deploiement.md) | Docker, Render, variables, CI/CD, checklist prod |
 | [`ci-cd-securite.md`](ci-cd-securite.md) | Synthèse CI/CD, JWT+bcrypt, rate limiting (mémoire→Redis), OWASP |
+| [`nosql-redis.md`](nosql-redis.md) | Composant d'accès NoSQL (Redis) + JSONB |
 | [`securite-owasp.md`](securite-owasp.md) | Couverture OWASP Top 10 |
 | [`green-it.md`](green-it.md) | Éco-conception |
 | [`rgpd.md`](rgpd.md) | Conformité RGPD |

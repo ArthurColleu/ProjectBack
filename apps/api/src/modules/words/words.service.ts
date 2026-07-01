@@ -1,11 +1,18 @@
 import { z } from "zod";
 import { HttpError } from "../../middlewares/errorHandler.js";
+import { noopCache, dailyWordKey, type Cache } from "../../db/cache.js";
 import type { WordsRepository } from "./words.repository.js";
 
 const wordSchema = z.string().length(5).regex(/^[a-z]+$/);
 const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 
-export function makeWordsService(repo: WordsRepository) {
+const toDateStr = (d: unknown) =>
+  d instanceof Date ? d.toISOString().slice(0, 10) : String(d).slice(0, 10);
+
+export function makeWordsService(repo: WordsRepository, cache: Cache = noopCache) {
+  // Invalide le cache NoSQL du mot du jour quand l'admin modifie une date.
+  const invalidate = (date: unknown) => cache.del(dailyWordKey(toDateStr(date)));
+
   return {
     async listWords() {
       return repo.findAll();
@@ -15,7 +22,9 @@ export function makeWordsService(repo: WordsRepository) {
       if (!dateSchema.safeParse(date).success) throw new HttpError(400, "invalid_date");
       if (!wordSchema.safeParse(word.toLowerCase()).success) throw new HttpError(400, "invalid_word");
       try {
-        return await repo.insert(date, word.toLowerCase(), adminId);
+        const created = await repo.insert(date, word.toLowerCase(), adminId);
+        await invalidate(date);
+        return created;
       } catch (e: unknown) {
         if (e && typeof e === "object" && "code" in e && (e as { code: string }).code === "23505") {
           throw new HttpError(409, "date_already_has_word");
@@ -37,6 +46,7 @@ export function makeWordsService(repo: WordsRepository) {
       };
       const updated = await repo.update(id, normalized);
       if (!updated) throw new HttpError(404, "not_found");
+      await invalidate(updated.date);
       return updated;
     },
 
