@@ -1,3 +1,7 @@
 node_modules
 dist
 .env
+
+# Artefacts TypeScript compilés qui traînent dans les sources/tests
+src/**/*.js
+tests/**/*.js
