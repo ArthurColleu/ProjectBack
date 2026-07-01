@@ -26,6 +26,20 @@ L'objectif du projet est de démontrer l'intégralité des compétences du titre
 - Nombre de parties jouées, taux de victoire
 - Série actuelle et meilleure série
 - Distribution des essais (histogramme)
+- Statistiques **propres à chaque compte** (calculées côté serveur à partir des
+  parties du joueur connecté).
+
+> **Règle de gestion — évolution des statistiques.** Le jeu étant **quotidien**
+> (§2.2 : une seule partie par joueur et par jour), les statistiques progressent
+> d'**une partie par jour**. Elles n'évoluent donc pas plusieurs fois dans la même
+> journée : une fois la partie du jour terminée, la suivante n'est disponible
+> qu'au changement de date (nouveau mot). La **série** (streak) mesure les jours
+> consécutifs de victoire.
+>
+> *Pour observer l'évolution en démonstration* : un administrateur peut planifier
+> des mots sur plusieurs dates (§2.4), ou l'on avance la date système d'un
+> environnement de test — chaque nouvelle journée débloque une nouvelle partie
+> qui s'ajoute aux statistiques.
 
 ### 2.4 Administration
 - Interface protégée (rôle admin)
